@@ -1,4 +1,5 @@
 module.exports = {
+    name: "Centery",
     port: 2307,
     debug: true,
     requestTimeout: -1,
