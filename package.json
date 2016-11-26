@@ -1,8 +1,8 @@
 {
-    "name": "livit-centery",
+    "name": "centery-home",
     "description": "",
-    "homepage": "https://github.com/phult",
-    "author": "Megaads <phult.contact@gmail.com>",
+    "homepage": "http://centery.net",
+    "author": "PhuLuong <phult.contact@gmail.com>",
     "keywords": ["smart home", "arduino", "bluetooth", "diy"],
     "license": "MIT",
     "version": "0.1.0",
@@ -10,7 +10,7 @@
     "contributors": [],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/phult/livit-centery.git"
+        "url": "git+https://github.com/phult/centery-home.git"
     },
     "dependencies": {
         "socket.io": "1.*",

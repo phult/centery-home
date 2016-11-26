@@ -12,5 +12,7 @@ module.exports = {
     encryption: {
         'key': "d6F3Efeq",
         'cipher': "aes-256-ctr"
-    }
+    },
+    connectedDevicesFilePath: __dir + "/storage/centery-devices.cef",
+    resourceVersion: "24112016"
 };
