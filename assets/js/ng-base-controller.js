@@ -1,13 +1,18 @@
-function BaseController($scope, $rootScope, $http, Socket) {
+function BaseController($scope, $rootScope, $http, io) {
     var self = this;
     this.initialize = function () {
-        $scope.socket = Socket;
-        Socket.on('dashboard.update', function (data) {
-            $rootScope.$broadcast("dashboard.update", data);
+        $scope.io = io;
+        io.on('switch.add', function (data) {
+            $rootScope.$broadcast("switch.add", data);
+        });
+        io.on('switch.update', function (data) {
+            $rootScope.$broadcast("switch.update", data);
+        });
+        io.on('switch.remove', function (data) {
+            $rootScope.$broadcast("switch.remove", data);
         });
     };
-    $scope.colors = ['rgb(17,137,193)', 'rgb(240,119,25)', 'rgb(188,184,186)', '#adc560', '#e7540c', '#9fcbe1', '#ccc', '#6aafd7', '#6078ae', '#b8501c'];
-    $scope.getByField = function (list, fieldName, value) {
+    $scope.getItem = function (list, fieldName, value) {
         var retVal = null;
         list.forEach(function (item) {
             if (item[fieldName] == value) {
@@ -16,5 +21,22 @@ function BaseController($scope, $rootScope, $http, Socket) {
         });
         //return
         return retVal;
+    };
+    $scope.removeItem = function (list, fieldName, value) {
+        var retval = false;
+        for(var i = 0; i < list.length; i++) {
+            if(list[i][fieldName] === value) {
+                retval = true;
+                list.splice(i, 1);
+                break;
+            }
+        }
+        return retval;
+    };
+    $scope.showLoading = function() {
+
+    };
+    $scope.hideLoading = function() {
+
     };
 }
