@@ -25,6 +25,12 @@
                         </span>
                     </div>
                 </li>
+                <li ng-show="isScanning == true && devices != null && devices.length == 0">
+                    <i>Scanning devices...</i>
+                </li>
+                <li ng-show="isScanning != true && (devices == null || devices.length == 0)">
+                    <i>Cannot found any device.</i>
+                </li>
             </ul>
         </div>
     </div>
