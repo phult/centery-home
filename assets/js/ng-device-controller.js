@@ -4,7 +4,7 @@ centeryApp.controller('DeviceController', function ($scope, $rootScope, $http, i
     $scope.isScanning = false;
     this.initialize = function () {
         this.__proto__.initialize();
-        $scope.scan();
+        //$scope.scan();
     };
     $scope.scan = function() {
         $scope.isScanning = true;
@@ -22,7 +22,8 @@ centeryApp.controller('DeviceController', function ($scope, $rootScope, $http, i
         device.isConnecting = true;
         device.isConnectFail = false;
         $http.post("/hub", {
-            hub: device.address
+            address: device.address,
+            name: device.name
         }).success(function (data) {
             device.isConnecting = false;
             if (data.status == "ok") {
