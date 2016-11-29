@@ -6,9 +6,9 @@ function HubService($config, $logger, $event) {
     this.init = function() {
         self.__proto__.init();
     }
-    this.switch = function(hubAddress, switchId, value) {
-        //TODO: precess switchId
-        self.write(hubAddress, value);
+    this.switch = function(hubAddress, switchAddress, state) {
+        //TODO: process with switchAddress
+        self.setState(hubAddress, state);
     }
     this.init();
 }

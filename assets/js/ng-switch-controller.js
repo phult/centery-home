@@ -1,21 +1,131 @@
-/**
- * Created by TuanPA on 3/12/2016.
- */
-dashboardApp.controller('SwitchController', function ($scope, $rootScope, $http,Socket) {
-    this.__proto__ = new BaseController($scope, $rootScope, $http,Socket);
+centeryApp.controller('SwitchController', function ($scope, $rootScope, $http, io) {
+    var self = this;
+    $scope.switches = [];
+    this.__proto__ = new BaseController($scope, $rootScope, $http, io);
     this.initialize = function () {
         this.__proto__.initialize();
-    };
-    $scope.$on("dashboard.update", function (event, data) {
-        $scope.$apply(function () {
-            if (data.summary != null) {
-                $scope.summaryData.xAxis.categories = data.summary.time;
-                $scope.summaryData.series[0].data = data.summary.io;
-                $scope.summaryData.series[1].data = data.summary.amount;
-                $scope.summaryTodayAmount = data.summary.amount[data.summary.amount.length - 1];
-                $scope.summaryTodayIO = data.summary.io[data.summary.io.length - 1];
-            }
+        io.on('switch.list', function (data) {
+            $scope.$apply(function () {
+                $scope.switches = data;
+            });
         });
-    });
+        io.on('switch.connect', function (data) {
+            $scope.$apply(function () {
+                var existedItem = $scope.getItem($scope.switches, "address", data.address);
+                if (existedItem == null) {
+                    $scope.switches.push(data);
+                }
+            });
+        });
+        io.on('switch.update', function (data) {
+            $scope.$apply(function () {
+                var switchObj = $scope.getItem($scope.switches, "address", data.address);
+                for (var property in data) {
+                    switchObj[property] = data[property];
+                }
+            });
+        });
+        io.on('switch.disconnect', function (data) {
+            $scope.$apply(function () {
+                $scope.removeItem($scope.switches, "address", data.address);
+            });
+        });
+        io.on('switch.remove', function (data) {
+            $scope.$apply(function () {
+                $scope.removeItem($scope.switches, "address", data.address);
+            });
+        });
+    };
+    $scope.remove = function(switchObj) {
+        $http.post("/remove-switch", {
+            'switch': switchObj.address
+        }).success(function (data) {
+
+        }).error(function () {
+        });
+    };
+    $scope.getSwitchColor = function(switchObj) {
+        var retval = "";
+        switch (switchObj.state) {
+            case '0':
+            {
+                retval = "bg-green";
+                break;
+            }
+            case '1':
+            {
+                retval = "bg-red";
+                break;
+            }
+            default:
+            {
+                retval = "bg-yellow";
+            }
+        }
+        return retval;
+    };
+    $scope.getSwitchIcon = function(switchObj) {
+        var retval = "";
+        switch (switchObj.state) {
+            case '0':
+            {
+                retval = "fa-plug";
+                break;
+            }
+            case '1':
+            {
+                retval = "fa-power-off";
+                break;
+            }
+            default:
+            {
+                retval = "fa-feed";
+            }
+        }
+        return retval;
+    };
+    $scope.changeState = function(switchObj) {
+        var payload = {
+            "hub": switchObj.hubAddress,
+            "switch": switchObj.address,
+            "state": switchObj.state,
+        }
+        switch (switchObj.state) {
+            case '0':
+            {
+                payload.state = '1';
+                break;
+            }
+            case '1':
+            {
+                payload.state = '0';
+                break;
+            }
+            default:
+            {
+                payload.state = '1';
+                //return;
+            }
+        }
+        $http.post("/switch", payload).success(function (data) {
+            if (data.status == "ok") {
+            } else {
+            }
+        }).error(function () {
+        });
+    };
+    $scope.rename = function(switchObj) {
+        $scope.selectedSwitch = switchObj;
+    };
+    $scope.saveName = function() {
+        $http.post("/rename-switch", {
+            'hub': $scope.selectedSwitch.hubAddress,
+            'switch': $scope.selectedSwitch.address,
+            'name': $scope.selectedSwitch.name
+        }).success(function (data) {
+
+        }).error(function () {
+        });
+    };
     this.initialize();
 });

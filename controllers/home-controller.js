@@ -23,8 +23,9 @@ function HomeController($config, $event, $logger, $hubService) {
         });
     }
     this.connectHub = function(io) {
-        var hubAddress = io.inputs.hub;
-        $hubService.connect(hubAddress, function(deviceIO) {
+        var hubAddress = io.inputs.address;
+        var hubName = io.inputs.name;
+        $hubService.connect(hubAddress, hubName, function(deviceIO) {
             io.json({
                 status: "ok",
                 result: deviceIO
@@ -37,14 +38,30 @@ function HomeController($config, $event, $logger, $hubService) {
     }
     this.renameHub = function(io) {
         var hubAddress = io.inputs.hub;
-        var value = io.inputs.value;
-        $hubService.rename(hubAddress, value);
+        var value = io.inputs.name;
+        $hubService.rename(hubAddress, name);
+        io.json({
+            "status": "ok"
+        });
+    }
+    this.renameSwitch = function(io) {
+        var hubAddress = io.inputs.hub;
+        var switchAddress = io.inputs.switch;
+        var name = io.inputs.name;
+        $hubService.rename(hubAddress, name);
         io.json({
             "status": "ok"
         });
     }
     this.removeHub = function(io) {
         var hubAddress = io.inputs.hub;
+        $hubService.remove(hubAddress);
+        io.json({
+            "status": "ok"
+        });
+    }
+    this.removeSwitch = function(io) {
+        var hubAddress = io.inputs.switch;
         $hubService.remove(hubAddress);
         io.json({
             "status": "ok"
@@ -67,9 +84,17 @@ function HomeController($config, $event, $logger, $hubService) {
     }
     this.switchHub = function(io) {
         var hubAddress = io.inputs.hub;
-        var switchId = io.inputs.switchId == null ? -1 : io.inputs.switchId;
-        var value = io.inputs.value;
-        $hubService.switch(hubAddress, switchId, value);
+        var state = io.inputs.state;
+        $hubService.switch(hubAddress, -1, state);
+        io.json({
+            "status": "ok"
+        });
+    }
+    this.switch = function(io) {
+        var hubAddress = io.inputs.hub;
+        var switchAddress = io.inputs.switch == null ? -1 : io.inputs.switch;
+        var state = io.inputs.state;
+        $hubService.switch(hubAddress, switchAddress, state);
         io.json({
             "status": "ok"
         });

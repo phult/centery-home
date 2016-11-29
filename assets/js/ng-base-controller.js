@@ -1,16 +1,6 @@
 function BaseController($scope, $rootScope, $http, io) {
     var self = this;
     this.initialize = function () {
-        $scope.io = io;
-        io.on('switch.add', function (data) {
-            $rootScope.$broadcast("switch.add", data);
-        });
-        io.on('switch.update', function (data) {
-            $rootScope.$broadcast("switch.update", data);
-        });
-        io.on('switch.remove', function (data) {
-            $rootScope.$broadcast("switch.remove", data);
-        });
     };
     $scope.getItem = function (list, fieldName, value) {
         var retVal = null;
@@ -19,7 +9,6 @@ function BaseController($scope, $rootScope, $http, io) {
                 retVal = item;
             }
         });
-        //return
         return retVal;
     };
     $scope.removeItem = function (list, fieldName, value) {

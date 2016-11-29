@@ -6,7 +6,7 @@ var socketIOConnection = require(__dir + "/core/net/socket-io-connection");
 var HubService = require(__dir + "/services/hub-service");
 var IOService = require(__dir + "/services/io-service");
 var hubService = new HubService(config, logger, event);
-var ioService = new IOService(config, logger, event, socketIOConnection);
+var ioService = new IOService(config, logger, event, socketIOConnection, hubService);
 module.exports = function ($serviceContainer) {
     $serviceContainer.bind("$config", config);
     $serviceContainer.bind("$route", routerLoader);
