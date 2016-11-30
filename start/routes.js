@@ -1,6 +1,8 @@
 module.exports = function ($route, $logger) {
     /** Register HTTP requests **/
     $route.get("/", "HomeController@index");
+    $route.get("/setting", "HomeController@setting");
+    $route.post("/setting", "HomeController@saveSetting");
     $route.get("/device", "HomeController@scan");
     $route.get("/hub", "HomeController@listHubs");
     $route.post("/hub", "HomeController@connectHub");

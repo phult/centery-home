@@ -14,5 +14,5 @@ module.exports = {
         'cipher': "aes-256-ctr"
     },
     connectedDevicesFilePath: __dir + "/storage/centery-devices.cef",
-    resourceVersion: "24112016"
+    centerySettingFilePath: __dir + "/config/centery.cef",
 };
