@@ -168,7 +168,7 @@ function BluetoothConnection($config, $logger, $event) {
     this.readConnectedDeviceLog = function() {
         var retval = {};
         try {
-            var fileData = fs.readFileSync($config.get("app.connectedDevicesFilePath"));
+            var fileData = fs.readFileSync($config.get("app.connectedDevicesFilePath"), "utf8");
             retval = JSON.parse(fileData == null || fileData == "" ? "{}" : fileData);
         } catch (err) {}
         return retval;
