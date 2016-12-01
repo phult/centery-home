@@ -3,15 +3,17 @@ module.exports = HomeController;
 var fs = require("fs");
 var packageCfg = require(__dir + "/package.json");
 var datetimeUtil = require(__dir + "/utils/datetime-util");
+var networkUtil = require(__dir + "/utils/network-util");
 
 function HomeController($config, $event, $logger, $hubService) {
     var self = this;
+    var localIP = networkUtil.getLocalIP();
     this.index = function(io) {
         var title = $config.get("app.name");
         io.render("home", {
             title: title,
             version: packageCfg.version,
-            host: $config.get("app.host", "localhost"),
+            host: localIP,
             port: $config.get("app.port", "2307")
         });
     };
@@ -21,7 +23,7 @@ function HomeController($config, $event, $logger, $hubService) {
         io.render("setting", {
             title: title,
             version: packageCfg.version,
-            host: $config.get("app.host", "localhost"),
+            host: localIP,
             port: $config.get("app.port", "2307"),
             configs: configs
         });
