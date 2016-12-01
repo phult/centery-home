@@ -6,6 +6,9 @@
     "keywords": ["smart home", "arduino", "bluetooth", "diy"],
     "license": "MIT",
     "version": "0.1.0",
+    "engines": {
+        "node": "4.1.1"
+    },
     "main": "app.js",
     "contributors": [],
     "repository": {
