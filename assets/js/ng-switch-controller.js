@@ -115,9 +115,17 @@ centeryApp.controller('SwitchController', function ($scope, $rootScope, $http, i
         });
     };
     $scope.rename = function(switchObj) {
+        $scope.onRenaming = true;
+        switchObj.currentName = switchObj.name;
         $scope.selectedSwitch = switchObj;
     };
+    $scope.cancelRename = function() {
+        $scope.onRenaming = false;
+        $scope.selectedSwitch.name = $scope.selectedSwitch.currentName;
+    };
     $scope.saveName = function() {
+        $scope.onRenaming = false;
+        $scope.selectedSwitch.name = $scope.selectedSwitch.currentName;
         $http.post("/rename-switch", {
             'hub': $scope.selectedSwitch.hubAddress,
             'switch': $scope.selectedSwitch.address,
