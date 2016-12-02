@@ -1,4 +1,4 @@
-centeryApp.controller('SwitchController', function ($scope, $rootScope, $http, io) {
+centeryApp.controller('SwitchController', function ($scope, $rootScope, $http, $window, $timeout, io) {
     var self = this;
     $scope.switches = [];
     this.__proto__ = new BaseController($scope, $rootScope, $http, io);
@@ -118,6 +118,9 @@ centeryApp.controller('SwitchController', function ($scope, $rootScope, $http, i
         $scope.onRenaming = true;
         switchObj.currentName = switchObj.name;
         $scope.selectedSwitch = switchObj;
+        $timeout(function() {
+            $window.document.getElementById("switch-name").focus();
+        }, 500);
     };
     $scope.cancelRename = function() {
         $scope.onRenaming = false;
