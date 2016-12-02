@@ -6,7 +6,10 @@ function BluetoothConnection($config, $logger, $event) {
     var deviceIOs = [];
     var inBackgroundTask = false;
     this.keepAliveMessage = "2";
-    this.init = function() {
+    this.init = function(args) {
+        if (args.keepAliveMessage != null){
+            self.keepAliveMessage = args.keepAliveMessage;
+        }
         setInterval(function() {
             self.runBackGroundTask(self.keepAliveDevices);
         }, 5000);

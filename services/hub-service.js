@@ -4,7 +4,9 @@ function HubService($config, $logger, $event) {
     var self = this;
     this.__proto__ = new BluetoothConnection($config, $logger, $event);
     this.init = function() {
-        self.__proto__.init();
+        self.__proto__.init({
+            keepAliveMessage: "2"
+        });
     }
     this.switch = function(hubAddress, switchAddress, state) {
         //TODO: process with switchAddress
