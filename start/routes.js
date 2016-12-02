@@ -1,8 +1,6 @@
 module.exports = function ($route, $logger) {
-    /** Register HTTP requests **/
+    /** Home Controller **/
     $route.get("/", "HomeController@index");
-    $route.get("/setting", "HomeController@setting");
-    $route.post("/setting", "HomeController@saveSetting");
     $route.get("/device", "HomeController@scan");
     $route.get("/hub", "HomeController@listHubs");
     $route.post("/hub", "HomeController@connectHub");
@@ -16,6 +14,8 @@ module.exports = function ($route, $logger) {
     $route.post("/message-hub", "HomeController@sendHubMessage");
     $route.post("/rename-hub", "HomeController@renameHub");
     $route.post("/rename-switch", "HomeController@renameSwitch");
-    /** Register socket.io requests **/
-    /** Register filters **/
+
+    /** Setting Controller **/
+    $route.get("/setting", "SettingController@index");
+    $route.post("/setting", "SettingController@save");
 };
