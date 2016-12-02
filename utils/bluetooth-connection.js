@@ -245,8 +245,10 @@ function DeviceIO(name, btSerial, $logger, $event) {
         return self.state == null ? -1 : self.state;
     };
     this.setState = function(state) {
-        self.state = state;
-        $event.fire("centery-device.update", self);
+        if (self.state != state) {
+            self.state = state;
+            $event.fire("centery-device.update", self);
+        }
     };
     this.write = function(data, callbackFn) {
         self.btSerial.write(new Buffer(data + "\r\n", "utf-8"), function(err, bytesWritten) {
