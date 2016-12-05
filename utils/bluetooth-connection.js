@@ -29,9 +29,7 @@ function BluetoothConnection($config, $logger, $event) {
                 var deviceIO = deviceIOs[i];
                 deviceIO.write(self.keepAliveMessage + "\r\n", function(error) {
                     if (error != null) {
-                        $logger.debug("device's disconnected: ", deviceIO.getAddress() + "-" + deviceIO.getName())
-                        $event.fire("centery-device.disconnect", deviceIO);
-                        removeDeviceIO(deviceIO.getAddress());
+                        self.removeDeviceIO(deviceIO.getAddress());
                     }
                 });
             }
@@ -53,6 +51,7 @@ function BluetoothConnection($config, $logger, $event) {
         var requireConnect = false;
         for (var deviceAddress in connectedDeviceLog) {
             if (self.getDeviceIOByAddress(deviceAddress) == null) {
+                $logger.debug("try reconnect to: " + deviceAddress + "-" + connectedDeviceLog[deviceAddress]);
                 self.connect(deviceAddress, null, function() {
                     callbackFn();
                 }, function() {
@@ -92,7 +91,7 @@ function BluetoothConnection($config, $logger, $event) {
                 function() {
                     console.log("btClient",btClient);
                     $logger.debug("Connected to: " + deviceAddress + "-" + deviceName);
-                    var deviceIO = new DeviceIO(deviceName, btClient, $logger, $event);
+                    var deviceIO = new DeviceIO(self, deviceName, btClient, $logger, $event);
                     deviceIOs.push(deviceIO);
                     self.writeConnectedDeviceLog(deviceIO);
                     $event.fire("centery-device.connect", deviceIO);
@@ -108,6 +107,9 @@ function BluetoothConnection($config, $logger, $event) {
                 }
             );
             btClient.close();
+        }, function (err) {
+            $logger.debug("Cannot findSerialPortChannel " + deviceAddress + "-" + deviceName);
+            errorCallbackFn(err);
         });
     }
     this.disconnect = function(deviceAddress) {
@@ -116,9 +118,6 @@ function BluetoothConnection($config, $logger, $event) {
         if (deviceIO != null) {
             retval = deviceIO;
             deviceIO.close();
-            removeDeviceIO(deviceIO.getAddress());
-            $event.fire("centery-device.disconnect", deviceIO);
-            $logger.debug("Disconnect to: " + deviceIO.getAddress() + "-" + deviceIO.getName());
         }
         return retval;
     }
@@ -181,18 +180,20 @@ function BluetoothConnection($config, $logger, $event) {
         connectedDeviceLog[deviceIO.getAddress()] = deviceIO.getName();
         fs.writeFile($config.get("app.connectedDevicesFilePath"), JSON.stringify(connectedDeviceLog), 'utf8');
     }
-    function removeConnectedDeviceLog(deviceAddress) {
-        var connectedDeviceLog = self.readConnectedDeviceLog();
-        delete connectedDeviceLog[deviceAddress]
-        fs.writeFile($config.get("app.connectedDevicesFilePath"), JSON.stringify(connectedDeviceLog), 'utf8');
-    }
-    function removeDeviceIO(address) {
+    this.removeDeviceIO = function(address) {
         for (var i = 0; i < deviceIOs.length; i++) {
             if (deviceIOs[i].getAddress() == address) {
+                $logger.debug("device's disconnected: ", deviceIOs[i].getAddress() + "-" + deviceIOs[i].getName())
+                $event.fire("centery-device.disconnect", deviceIOs[i]);
                 deviceIOs.splice(i, 1);
                 break;
             }
         }
+    }
+    function removeConnectedDeviceLog(deviceAddress) {
+        var connectedDeviceLog = self.readConnectedDeviceLog();
+        delete connectedDeviceLog[deviceAddress]
+        fs.writeFile($config.get("app.connectedDevicesFilePath"), JSON.stringify(connectedDeviceLog), 'utf8');
     }
     function getDeviceName(address, defaultName) {
         var retval = (defaultName == null ? address : defaultName);
@@ -204,8 +205,9 @@ function BluetoothConnection($config, $logger, $event) {
     }
 }
 
-function DeviceIO(name, btSerial, $logger, $event) {
+function DeviceIO(bluetoothConnection, name, btSerial, $logger, $event) {
     var self = this;
+    this.bluetoothConnection = bluetoothConnection;
     this.btSerial = btSerial;
     this.readers = [];
     this.state = -1;
@@ -224,12 +226,14 @@ function DeviceIO(name, btSerial, $logger, $event) {
         });
         self.btSerial.on('closed', function() {
             $logger.debug("btSerial is closed");
+            self.bluetoothConnection.removeDeviceIO(self.getAddress());
         });
         self.btSerial.on('finished', function() {
             $logger.debug("btSerial is finished");
         });
         self.btSerial.on('failure', function() {
             $logger.debug("btSerial is failure");
+            self.bluetoothConnection.removeDeviceIO(self.getAddress());
         });
     };
     this.getAddress = function() {
