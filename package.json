@@ -21,6 +21,7 @@
         "ejs": "2.*",
         "lru-cache": "*",
         "crypto": "*",
-        "bluetooth-serial-port": "*"
+        "bluetooth-serial-port": "*",
+        "socket.io-client": "*"
     }
 }
