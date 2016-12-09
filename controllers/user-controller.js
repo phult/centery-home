@@ -7,9 +7,8 @@ function UserController($config, $event, $logger) {
     this.login = function(io) {
         if (io.method == "get") {
             var user = io.session.get("user", null);
-            // user's logged in
+            // check if user's logged in
             if (user != null) {
-                // redirect to index action
                 io.redirect("/");
             } else {
                 io.render("login", {
@@ -35,9 +34,11 @@ function UserController($config, $event, $logger) {
         io.redirect("/login");
     };
     function setUserSession(io) {
-        io.session.set("user", io.inputs);
+        io.session.set("user", {
+            username: io.inputs.username
+        });
     }
     function destroyUserSession(io) {
-        io.session.destroy();
+        io.session.remove("user");
     }
 }
