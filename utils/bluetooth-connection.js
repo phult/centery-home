@@ -83,6 +83,13 @@ function BluetoothConnection($config, $logger, $event) {
         btScanner.inquire();
     }
     this.connect = function(deviceAddress, deviceName, callbackFn, errorCallbackFn) {
+        // Check whether is connected
+        var existedDeviceIO = self.getDeviceIOByAddress(deviceAddress);
+        if (existedDeviceIO != null) {
+            callbackFn(existedDeviceIO);
+            return;
+        }
+        // ELSE
         var btClient = new(require('bluetooth-serial-port')).BluetoothSerialPort();
         var deviceName = getDeviceName(deviceAddress, deviceName);
         btClient.findSerialPortChannel(deviceAddress, function(channel) {
