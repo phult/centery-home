@@ -11,6 +11,7 @@ module.exports = function ($serviceContainer) {
     $serviceContainer.bind("$config", config);
     $serviceContainer.bind("$route", routerLoader);
     $serviceContainer.bind("$event", event);
+    $serviceContainer.bind("$logger", logger);
     $serviceContainer.bind("$hubService", hubService);
     $serviceContainer.bind("$ioService", ioService);
     $serviceContainer.bind("$socketIOConnection", socketIOConnection);
