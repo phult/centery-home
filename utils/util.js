@@ -20,8 +20,8 @@ module.exports = {
         }
         return retval;
     },
-    getSetting: function(key) {
-        var retval = null;
+    getSetting: function(key, defaultValue) {
+        var retval = defaultValue;
         try {
             var fileData = fs.readFileSync(config.get("app.centerySettingFilePath"), "utf8");
             var settings = JSON.parse(fileData == null || fileData == "" ? "[]" : fileData);
