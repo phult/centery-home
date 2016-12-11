@@ -35,11 +35,7 @@ function IOService($config, $logger, $event, $socketIOConnection, $hubService) {
         switch (event) {
             case "connection.socketio.connection":
                 {
-                    var payloadData = [];
-                    var deviceIOs = $hubService.findDeviceIOs();
-                    for (var i = 0; i < deviceIOs.length; i++){
-                        payloadData.push(deviceIOs[i].serialize());
-                    }
+                    var payloadData = $hubService.findSerilizedSwitches();
                     if (session.socket != null) {
                         session.socket.emit("switch.list", payloadData);
                     }

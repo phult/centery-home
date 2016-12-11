@@ -8,9 +8,18 @@ function HubService($config, $logger, $event) {
             keepAliveMessage: "2"
         });
     }
+    //TODO: process with switchAddress
     this.switch = function(hubAddress, switchAddress, state) {
-        //TODO: process with switchAddress
         self.setState(hubAddress, state);
+    }
+    //TODO: process with switched instead of hubs
+    this.findSerilizedSwitches = function() {
+        var retval = [];
+        var deviceIOs = self.findDeviceIOs();
+        for (var i = 0; i < deviceIOs.length; i++){
+            retval.push(deviceIOs[i].serialize());
+        }
+        return retval;
     }
     this.init();
 }
