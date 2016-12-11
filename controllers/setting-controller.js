@@ -10,9 +10,11 @@ function SettingController($config, $event, $logger, $hubService) {
     var localIP = networkUtil.getLocalIP();
     this.index = function(io) {
         var title = $config.get("app.name");
+        var node = util.getSetting("node", "Unknown");
         var configs = util.readSettingFile();
         io.render("setting", {
             title: title,
+            node: node,
             version: packageCfg.version,
             host: localIP,
             port: $config.get("app.port", "2307"),

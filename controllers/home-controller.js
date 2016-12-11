@@ -4,14 +4,17 @@ var fs = require("fs");
 var packageCfg = require(__dir + "/package.json");
 var datetimeUtil = require(__dir + "/utils/datetime-util");
 var networkUtil = require(__dir + "/utils/network-util");
+var util = require(__dir + "/utils/util");
 
 function HomeController($config, $event, $logger, $hubService) {
     var self = this;
     var localIP = networkUtil.getLocalIP();
     this.index = function(io) {
+        var node = util.getSetting("node", "Unknown");
         var title = $config.get("app.name");
         io.render("home", {
             title: title,
+            node: node,
             version: packageCfg.version,
             host: localIP,
             port: $config.get("app.port", "2307")
