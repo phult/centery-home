@@ -59,6 +59,9 @@
   </div>
   <!-- /.lockscreen-item -->
   <div class="help-block text-center">
+    <%if (typeof result != 'undefined' && result == false) { %>
+    <p class="text-red">Invalid password!</p>
+    <% } %>
     Enter your password to control your life.
   </div>
   <div class="lockscreen-footer text-center centery-label">

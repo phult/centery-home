@@ -16,10 +16,7 @@ function UserController($config, $event, $logger) {
                 });
             }
         } else if (io.method == "post") {
-            var inputPassword = io.inputs["password"].hashHex();
-            var password = util.getSetting("password");
-            if (inputPassword == password) {
-                setUserSession(io);
+            if (login(io, io.inputs["username"], io.inputs["password"])) {
                 io.redirect("/");
             } else {
                 io.render("login", {
@@ -33,10 +30,20 @@ function UserController($config, $event, $logger) {
         destroyUserSession(io);
         io.redirect("/login");
     };
-    function setUserSession(io) {
-        io.session.set("user", {
-            username: io.inputs.username
-        });
+    function login(io, username, password) {
+        var retval = false;
+        password = password.hashHex();
+        var passwordSetting = util.getSetting("password");
+        if (password == passwordSetting) {
+            setUserSession(io, {
+                username: username
+            });
+            retval = true;
+        }
+        return retval;
+    }
+    function setUserSession(io, user) {
+        io.session.set("user", user);
     }
     function destroyUserSession(io) {
         io.session.remove("user");
