@@ -10,11 +10,11 @@ function HomeController($config, $event, $logger, $hubService) {
     var self = this;
     var localIP = networkUtil.getLocalIP();
     this.index = function(io) {
-        var node = util.getSetting("node", "Unknown");
+        var room = util.getSetting("room", "Unknown");
         var title = $config.get("app.name");
         io.render("home", {
             title: title,
-            node: node,
+            room: room,
             version: packageCfg.version,
             host: localIP,
             port: $config.get("app.port", "2307")
