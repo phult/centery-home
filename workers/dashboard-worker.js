@@ -7,15 +7,15 @@ function DasboardWorker($config, $event, $logger, $hubService) {
     var dashboardHost = util.getSetting("dashboard-host", "localhost");
     var dashboardPort = util.getSetting("dashboard-port", "8888");
     var apiKey = util.getSetting("apiKey", "");
-    var node = util.getSetting("node", "");
-    var switches = $hubService.findSerilizedSwitches();
+    var room = util.getSetting("room", "");
     var socket = null;
     function init() {
         socket = io.connect("http://" + dashboardHost + ":" + dashboardPort, {
-            apiKey: apiKey,
-            type: "centery-home",
-            node: node,
-            switches: switches
+            query:
+            "extra=ctr_type,ctr_apiKey,ctr_room" +
+            "&ctr_type=room" +
+            "&ctr_apiKey=" + apiKey +
+            "&ctr_room=" + room
         });
         socket.on("connect", function(){
             onConnection("connect");
@@ -30,6 +30,7 @@ function DasboardWorker($config, $event, $logger, $hubService) {
             onConnection("reconnect");
         });
         socket.on("message", onMessage);
+        socket.on("list-switches", listSwitches);
 
         $event.listen("centery-device.*", function(event, deviceIO) {
             switch (event) {
@@ -66,15 +67,24 @@ function DasboardWorker($config, $event, $logger, $hubService) {
     }
 
     function onMessage(message) {
-        var message = JSON.parse(message);
+        //var message = JSON.parse(message);
+        $logger.debug("on dashboard message", message);
         switch (message.type) {
-            case "": {
+            case "dashboard-switch": {
+                var hubAddress = message.hub;
+                var switchAddress = message.switch == null ? -1 : message.switch;
+                var state = message.state;
+                $hubService.switch(hubAddress, switchAddress, state);
                 break;
             }
             default: {
 
             }
         }
+    }
+    function listSwitches(message) {
+        var switches = $hubService.findSerilizedSwitches();
+        sendMessage("switch.list", switches);
     }
     function sendMessage(event, data) {
         $logger.debug("sendMessage", event);
