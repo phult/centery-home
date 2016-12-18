@@ -6,8 +6,7 @@ module.exports = {
     autoload: [
         "/controllers",
         "/entities",
-        "/start",
-        "/workers"
+        "/start"
     ],
     assetPath: "/assets",
     encryption: {

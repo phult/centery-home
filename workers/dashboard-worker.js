@@ -2,36 +2,11 @@ module.exports = DasboardWorker;
 var util = require(__dir + "/utils/util");
 var io = require('socket.io-client');
 
-function DasboardWorker($config, $event, $logger, $hubService) {
+function DasboardWorker($config, $logger, $event, $hubService) {
     var self = this;
-    var dashboardHost = util.getSetting("dashboard-host", "localhost");
-    var dashboardPort = util.getSetting("dashboard-port", "8888");
-    var apiKey = util.getSetting("apiKey", "");
-    var room = util.getSetting("room", "");
     var socket = null;
     function init() {
-        socket = io.connect("http://" + dashboardHost + ":" + dashboardPort, {
-            query:
-            "extra=ctr_type,ctr_apiKey,ctr_room" +
-            "&ctr_type=room" +
-            "&ctr_apiKey=" + apiKey +
-            "&ctr_room=" + room
-        });
-        socket.on("connect", function(){
-            onConnection("connect");
-        });
-        socket.on("connect_error", function(){
-            onConnection("connect_error");
-        });
-        socket.on("reconnect_failed", function(){
-            onConnection("reconnect_failed");
-        });
-        socket.on("reconnect", function(){
-            onConnection("reconnect");
-        });
-        socket.on("message", onMessage);
-        socket.on("list-switches", listSwitches);
-
+        self.connect();
         $event.listen("centery-device.*", function(event, deviceIO) {
             switch (event) {
                 case "centery-device.connect":
@@ -56,10 +31,42 @@ function DasboardWorker($config, $event, $logger, $hubService) {
                     }
                 default:
                     {
-
                     }
             }
         });
+    }
+    this.disconnect = function() {
+        if (socket != null) {
+            socket.disconnect();
+        }
+    }
+    this.connect = function() {
+        self.disconnect();
+        var dashboardHost = util.getSetting("dashboard-host", "localhost");
+        var dashboardPort = util.getSetting("dashboard-port", "8888");
+        var apiKey = util.getSetting("apiKey", "");
+        var room = util.getSetting("room", "");
+        socket = io.connect("http://" + dashboardHost + ":" + dashboardPort, {
+            query:
+            "extra=ctr_type,ctr_apiKey,ctr_room" +
+            "&ctr_type=room" +
+            "&ctr_apiKey=" + apiKey +
+            "&ctr_room=" + room + " - ID:" + util.randomNumber(4)
+        });
+        socket.on("connect", function(){
+            onConnection("connect");
+        });
+        socket.on("connect_error", function(){
+            onConnection("connect_error");
+        });
+        socket.on("reconnect_failed", function(){
+            onConnection("reconnect_failed");
+        });
+        socket.on("reconnect", function(){
+            onConnection("reconnect");
+        });
+        socket.on("message", onMessage);
+        socket.on("list-switches", listSwitches);
     }
 
     function onConnection(type) {

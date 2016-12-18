@@ -5,7 +5,7 @@ var datetimeUtil = require(__dir + "/utils/datetime-util");
 var networkUtil = require(__dir + "/utils/network-util");
 var util = require(__dir + "/utils/util");
 
-function SettingController($config, $event, $logger, $hubService) {
+function SettingController($config, $event, $logger, $hubService, $dashboardWorker) {
     var self = this;
     var localIP = networkUtil.getLocalIP();
     this.index = function(io) {
@@ -34,6 +34,7 @@ function SettingController($config, $event, $logger, $hubService) {
             }
         }
         util.writeSettingFile(configs);
+        $dashboardWorker.connect();
         io.json({
             status: "ok"
         });

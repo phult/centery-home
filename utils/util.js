@@ -3,6 +3,17 @@ var config = require(__dir + "/core/app/config");
 var logger = (require(__dir + "/core/log/logger-factory")).getLogger();
 
 module.exports = {
+    randomNumber: function(length) {
+        var retval = "";
+        if (length == null) {
+            length = 8;
+        }
+        var possible = "0123456789";
+        for (var i = 0; i < length; i++) {
+            retval += possible.charAt(Math.floor(Math.random() * possible.length));
+        }
+        return retval;
+    },
     flatArrayToObject: function(array) {
         var retval = [];
         for (var i = 0; i < array.length; i = i + 2) {
@@ -38,6 +49,6 @@ module.exports = {
         return retval;
     },
     writeSettingFile: function(configs) {
-        fs.writeFile(config.get("app.centerySettingFilePath"), JSON.stringify(configs), "utf8");
+        fs.writeFileSync(config.get("app.centerySettingFilePath"), JSON.stringify(configs), "utf8");
     }
 };
