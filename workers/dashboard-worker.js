@@ -71,8 +71,8 @@ function DasboardWorker($config, $event, $logger, $hubService) {
         $logger.debug("on dashboard message", message);
         switch (message.type) {
             case "dashboard-switch": {
-                var hubAddress = message.hub;
-                var switchAddress = message.switch == null ? -1 : message.switch;
+                var hubAddress = message.hubAddress;
+                var switchAddress = message.address == null ? -1 : message.address;
                 var state = message.state;
                 $hubService.switch(hubAddress, switchAddress, state);
                 break;
