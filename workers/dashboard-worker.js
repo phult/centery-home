@@ -84,6 +84,10 @@ function DasboardWorker($config, $logger, $event, $hubService) {
                 $hubService.switch(hubAddress, switchAddress, state);
                 break;
             }
+            case "dashboard-restart-room": {
+                process.exit(1);
+                break;
+            }
             default: {
 
             }
