@@ -107,7 +107,7 @@ function DasboardWorker($config, $logger, $event, $hubService) {
     function execureBackgroundProcess() {
         if (requireRestart) {
             $logger.debug("Restarting application...");
-            process.exit(0);
+            __process.exit(0);
         }
     }
     init();
