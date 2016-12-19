@@ -5,7 +5,9 @@ var io = require('socket.io-client');
 function DasboardWorker($config, $logger, $event, $hubService) {
     var self = this;
     var socket = null;
+    var requireRestart = false;
     function init() {
+        setInterval(execureBackgroundProcess, 10000);
         self.connect();
         $event.listen("centery-device.*", function(event, deviceIO) {
             switch (event) {
@@ -85,7 +87,8 @@ function DasboardWorker($config, $logger, $event, $hubService) {
                 break;
             }
             case "dashboard-restart-room": {
-                process.exit(1);
+                $logger.debug("Application will be restarted in several seconds.");
+                requireRestart = true;
                 break;
             }
             default: {
@@ -100,6 +103,12 @@ function DasboardWorker($config, $logger, $event, $hubService) {
     function sendMessage(event, data) {
         $logger.debug("sendMessage", event);
         socket.emit(event, data);
+    }
+    function execureBackgroundProcess() {
+        if (requireRestart) {
+            $logger.debug("Restarting application...");
+            process.exit(0);
+        }
     }
     init();
 }
