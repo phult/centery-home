@@ -246,9 +246,7 @@ function DeviceIO(bluetoothConnection, name, btSerial, $logger, $event) {
                 receiveData = receiveData.split('\r').join('');
                 receiveData = receiveData.split('\n').join('');
                 receiveDataBuffer += receiveData;
-                console.log("receiveData", receiveData);
                 if (receiveData.charAt(receiveData.length - 1) == "]") {
-                    console.log("receiveDataBuffer", receiveDataBuffer);
                     var receiveDataObj = JSON.parse(receiveDataBuffer);
                     receiveDataBuffer = "";
                     for (var i = 0; i < receiveDataObj.length; i++) {
@@ -311,7 +309,6 @@ function DeviceIO(bluetoothConnection, name, btSerial, $logger, $event) {
         }
     };
     this.write = function(data, callbackFn) {
-        console.log("write", data);
         self.btSerial.write(new Buffer(data), function(err, bytesWritten) {
             if (err) {
                 $logger.debug("DeviceIO - write failure", err);
@@ -331,11 +328,19 @@ function DeviceIO(bluetoothConnection, name, btSerial, $logger, $event) {
         self.btSerial.close();
     };
     this.serialize = function() {
+        return {
+            address: self.getAddress(),
+            name: self.getName(),
+            switches: Object.keys(self.switches).length,
+            state: 1
+        };
+    };
+    this.serializeSwitches = function() {
         var retval = [];
         for (var switchAddress in self.switches) {
             retval.push(self.switches[switchAddress]);
         }
         return retval;
-    };
+    }
     this.init();
 }

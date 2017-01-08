@@ -15,7 +15,7 @@ function HubService($config, $logger, $event) {
         var retval = [];
         var deviceIOs = self.findDeviceIOs();
         for (var i = 0; i < deviceIOs.length; i++){
-            retval = retval.concat(deviceIOs[i].serialize())
+            retval = retval.concat(deviceIOs[i].serializeSwitches())
         }
         return retval;
     }

@@ -1,0 +1,31 @@
+<div class="col-md-12">
+    <div class="box box-success">
+        <!-- /.box-header -->
+        <div class="box-body no-padding">
+          <table class="table table-striped">
+            <tbody><tr>
+              <th style="width: 10px">#</th>
+              <th>Hub address</th>
+              <th>Hub name</th>
+              <th>Switches</th>
+              <th style="width: 170px"></th>
+            </tr>
+            <tr ng-repeat="hub in hubs">
+              <td>
+                  <i title="offline" ng-show="hub.state == 0" class="fa fa-circle text-warning"></i>
+                  <i title="online" ng-show="hub.state == 1" class="fa fa-circle text-success"></i>
+              </td>
+              <td>{{hub.address}}</td>
+              <td>{{hub.name}}</td>
+              <td>{{hub.switches}}</td>
+              <th>
+                  <a href="#" ng-click="rename(hub)" data-toggle="modal" data-target="#hubRenamingDialog"><i class="fa fa-edit" title="Rename"></i> Rename</a>&nbsp
+                  <a href="#" style="color: red" ng-click="remove(hub)"><i class="fa fa-remove" title="Remove"></i> Remove</a>
+              </th>
+            </tr>
+          </tbody></table>
+        </div>
+        <!-- /.box-body -->
+      </div>
+  </div>
+  <%- include('hub-renaming-dialog') %>

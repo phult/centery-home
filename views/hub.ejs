@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title><%- title %> | Setting</title>
+        <title><%- title %></title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
@@ -25,11 +25,12 @@
         <script>
             var host = '<%- host %>';
             var port = <%- port %>;
-            var configs = <%- JSON.stringify(configs) %>;
+            var hubs = <%- JSON.stringify(hubs) %>;;
         </script>
         <script src="/js/centery-app.js?v=<%- version %>"></script>
         <script src="/js/ng-base-controller.js?v=<%- version %>"></script>
-        <script src="/js/ng-setting-controller.js?v=<%- version %>"></script>
+        <script src="/js/ng-hub-controller.js?v=<%- version %>"></script>
+        <script src="/js/ng-device-controller.js?v=<%- version %>"></script>
         <style>
             .js-command {
                 cursor: pointer;
@@ -54,46 +55,16 @@
                 <!-- Main content -->
                 <section class="content-header">
                   <h1>
-                    Setting
+                    Hub Management
                     <small>CONTROL PANEL</small>
                   </h1>
                 </section>
                 <section class="content">
-                    <div class="row" ng-controller="SettingController">
-                        <div class="col-md-6">
-                            <div class="box">
-                                <div class="box-header">
-                                  <h3 class="box-title">System configurations</h3>
-                                </div>
-                                <!-- /.box-header -->
-                                <div class="box-body no-padding">
-                                  <table class="table table-striped">
-                                    <tbody><tr>
-                                      <th style="width: 10px">#</th>
-                                      <th>Name</th>
-                                      <th>Value</th>
-                                      <th style="width: 120px"></th>
-                                    </tr>
-                                    <tr ng-repeat="config in configs">
-                                      <td>{{$index+1}}.</td>
-                                      <td>{{config.name}}</td>
-                                      <td>
-                                          <input type="{{config.type == 'password' ? 'password' : 'text'}}" style="width: 100%"
-                                            ng-readonly="config.isEditing != true"
-                                            focus-me="config.isEditing == true"
-                                            ng-model="config.value"/>
-                                      </td>
-                                      <td>
-                                          <span class="badge bg-green js-command" ng-show="config.isEditing != true" ng-click="edit(config)">Edit</span>
-                                          <span class="badge bg-red js-command" ng-show="config.isEditing == true" ng-click="save(config)">Save</span>
-                                          <span class="badge bg-blue js-command" ng-show="config.isEditing == true"  ng-click="cancel(config)">Cancel</span>
-                                      </td>
-                                    </tr>
-                                  </tbody></table>
-                                </div>
-                                <!-- /.box-body -->
-                              </div>
-                          </div>
+                    <div class="row" ng-controller="HubController">
+                        <%- include('components/hub-list') %>
+                    </div>
+                    <div class="row" ng-controller="DeviceController">
+                        <%- include('components/device-list') %>
                     </div>
                 </section>
                 <!-- /.content -->

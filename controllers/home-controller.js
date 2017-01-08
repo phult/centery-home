@@ -9,6 +9,9 @@ var util = require(__dir + "/utils/util");
 function HomeController($config, $event, $logger, $hubService) {
     var self = this;
     var localIP = networkUtil.getLocalIP();
+    this.index = function(io) {
+        io.delegate("SettingController@index");
+    };
     this.switchMonitor = function(io) {
         var room = util.getSetting("room", "Unknown");
         var title = $config.get("app.name");
@@ -20,11 +23,26 @@ function HomeController($config, $event, $logger, $hubService) {
             port: $config.get("app.port", "2307")
         });
     };
+    this.hubManagement = function(io) {
+        var room = util.getSetting("room", "Unknown");
+        var title = $config.get("app.name");
+        var hubs = [];
+        var deviceLog = $hubService.readConnectedDeviceLog();
+        for (var hubAddress in deviceLog) {
+            hubs.push({
+                address: hubAddress,
+                name: deviceLog[hubAddress].name,
+                switches: Object.keys(deviceLog[hubAddress].switches).length,
+                state: $hubService.getDeviceIOByAddress(hubAddress) == null ? 0 : 1
+            });
+        }
+        io.render("hub", {
             title: title,
             room: room,
             version: packageCfg.version,
             host: localIP,
-            port: $config.get("app.port", "2307")
+            port: $config.get("app.port", "2307"),
+            hubs: hubs
         });
     };
     this.scan = function(io) {
@@ -50,8 +68,8 @@ function HomeController($config, $event, $logger, $hubService) {
         });
     };
     this.renameHub = function(io) {
-        var hubAddress = io.inputs.hubAddress;
-        var name = io.inputs.hubName;
+        var hubAddress = io.inputs.address;
+        var name = io.inputs.name;
         $hubService.renameHub(hubAddress, name);
         io.json({
             "status": "ok"
@@ -67,28 +85,26 @@ function HomeController($config, $event, $logger, $hubService) {
         });
     };
     this.removeHub = function(io) {
-        var hubAddress = io.inputs.hub;
+        var hubAddress = io.inputs.address;
         $hubService.remove(hubAddress);
         io.json({
             "status": "ok"
         });
     };
     this.removeSwitch = function(io) {
-        var hubAddress = io.inputs.switch;
-        $hubService.remove(hubAddress);
         io.json({
-            "status": "ok"
+            "status": "na"
         });
     };
     this.closeHub = function(io) {
-        var hubAddress = io.inputs.hub;
+        var hubAddress = io.inputs.address;
         $hubService.close(hubAddress);
         io.json({
             "status": "ok"
         });
     };
     this.sendHubMessage = function(io) {
-        var hubAddress = io.inputs.hub;
+        var hubAddress = io.inputs.address;
         var message = io.inputs.message;
         $hubService.write(hubAddress, message);
         io.json({
@@ -96,9 +112,9 @@ function HomeController($config, $event, $logger, $hubService) {
         });
     }
     this.switchHub = function(io) {
-        var hubAddress = io.inputs.hub;
+        var hubAddress = io.inputs.address;
         var state = io.inputs.state;
-        $hubService.switch(hubAddress, -1, state);
+        $hubService.switchHub(hubAddress, -1, state);
         io.json({
             "status": "ok"
         });
@@ -113,6 +129,19 @@ function HomeController($config, $event, $logger, $hubService) {
         });
     };
     this.listHubs = function(io) {
-        io.json($hubService.readConnectedDeviceLog());
+        var result = [];
+        var deviceLog = $hubService.readConnectedDeviceLog();
+        for (var hubAddress in deviceLog) {
+            result.push({
+                address: hubAddress,
+                name: deviceLog[hubAddress].name,
+                switches: Object.keys(deviceLog[hubAddress].switches).length,
+                state: $hubService.getDeviceIOByAddress(hubAddress) == null ? 0 : 1
+            });
+        }
+        io.json({
+            "status": "ok",
+            "result": result
+        });
     };
 }

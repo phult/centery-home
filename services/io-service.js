@@ -6,7 +6,8 @@ function IOService($config, $logger, $event, $socketIOConnection, $hubService) {
         switch (event) {
             case "centery.hub.connect":
                 {
-                    var deviceIOSerializes = data.serialize();
+                    $socketIOConnection.broadcastMessage("hub.connect", data.serialize());
+                    var deviceIOSerializes = data.serializeSwitches();
                     for (var i = 0; i < deviceIOSerializes.length; i++) {
                         $socketIOConnection.broadcastMessage("switch.connect", deviceIOSerializes[i]);
                     }
@@ -14,7 +15,8 @@ function IOService($config, $logger, $event, $socketIOConnection, $hubService) {
                 }
             case "centery.hub.disconnect":
                 {
-                    var deviceIOSerializes = data.serialize();
+                    $socketIOConnection.broadcastMessage("hub.disconnect", data.serialize());
+                    var deviceIOSerializes = data.serializeSwitches();
                     for (var i = 0; i < deviceIOSerializes.length; i++) {
                         $socketIOConnection.broadcastMessage("switch.disconnect", deviceIOSerializes[i]);
                     }
@@ -22,7 +24,8 @@ function IOService($config, $logger, $event, $socketIOConnection, $hubService) {
                 }
             case "centery.hub.remove":
                 {
-                    var deviceIOSerializes = data.serialize();
+                    $socketIOConnection.broadcastMessage("hub.remove", data.serialize());
+                    var deviceIOSerializes = data.serializeSwitches();
                     for (var i = 0; i < deviceIOSerializes.length; i++) {
                         $socketIOConnection.broadcastMessage("switch.remove", deviceIOSerializes[i]);
                     }
@@ -30,7 +33,7 @@ function IOService($config, $logger, $event, $socketIOConnection, $hubService) {
                 }
             case "centery.hub.update":
                 {
-                    $socketIOConnection.broadcastMessage("hub.update", data);
+                    $socketIOConnection.broadcastMessage("hub.update", data.serialize());
                     break;
                 }
             case "centery.switch.update":

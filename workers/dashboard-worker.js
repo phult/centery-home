@@ -11,7 +11,7 @@ function DasboardWorker($config, $logger, $event, $hubService) {
             switch (event) {
                 case "centery.hub.connect":
                     {
-                        var deviceIOSerializes = data.serialize();
+                        var deviceIOSerializes = data.serializeSwitches();
                         for (var i = 0; i < deviceIOSerializes.length; i++) {
                             sendMessage("switch.connect", deviceIOSerializes[i]);
                         }
@@ -19,7 +19,7 @@ function DasboardWorker($config, $logger, $event, $hubService) {
                     }
                 case "centery.hub.disconnect":
                     {
-                        var deviceIOSerializes = data.serialize();
+                        var deviceIOSerializes = data.serializeSwitches();
                         for (var i = 0; i < deviceIOSerializes.length; i++) {
                             sendMessage("switch.disconnect", deviceIOSerializes[i]);
                         }
@@ -27,7 +27,7 @@ function DasboardWorker($config, $logger, $event, $hubService) {
                     }
                 case "centery.hub.remove":
                     {
-                        var deviceIOSerializes = data.serialize();
+                        var deviceIOSerializes = data.serializeSwitches();
                         for (var i = 0; i < deviceIOSerializes.length; i++) {
                             sendMessage("switch.remove", deviceIOSerializes[i]);
                         }
@@ -35,7 +35,7 @@ function DasboardWorker($config, $logger, $event, $hubService) {
                     }
                 case "centery.hub.update":
                     {
-                        sendMessage("hub.update", data);
+                        sendMessage("hub.update", data.serialize());
                         break;
                     }
                 case "centery.switch.update":

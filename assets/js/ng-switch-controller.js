@@ -35,9 +35,39 @@ centeryApp.controller('SwitchController', function ($scope, $rootScope, $http, $
                 $scope.removeItem($scope.switches, "address", data.address);
             });
         });
+        io.on('hub.update', function (data) {
+            $scope.$apply(function () {
+                for (var i = 0; i < $scope.switches.length; i++) {
+                    if ($scope.switches[i].hubAddress == data.address) {
+                        $scope.switches[i].hubName = data.name;
+                    }
+                }
+            });
+        });
     };
     $scope.remove = function(switchObj) {
     };
+    $scope.listHubs = function() {
+        var retval = {};
+        for (var i = 0; i < $scope.switches.length; i++) {
+            if (retval[$scope.switches[i].hubAddress] == null) {
+                retval[$scope.switches[i].hubAddress] = {
+                    address: $scope.switches[i].hubAddress,
+                    name: $scope.switches[i].hubName,
+                }
+            }
+        }
+        return retval;
+    }
+    $scope.listSwitchesByHub = function(hubAddress) {
+        var retval = [];
+        for (var i = 0; i < $scope.switches.length; i++) {
+            if ($scope.switches[i].hubAddress == hubAddress) {
+                retval.push($scope.switches[i]);
+            }
+        }
+        return retval;
+    }
     $scope.getSwitchColor = function(switchObj) {
         var retval = "";
         switch (switchObj.state) {
