@@ -5,7 +5,7 @@ function BluetoothConnection($config, $logger, $event) {
     var fs = require("fs");
     var deviceIOs = [];
     var inBackgroundTask = false;
-    this.keepAliveMessage = "2";
+    this.keepAliveMessage = "[alive]";
     this.init = function(args) {
         if (args.keepAliveMessage != null){
             self.keepAliveMessage = args.keepAliveMessage;
@@ -27,7 +27,7 @@ function BluetoothConnection($config, $logger, $event) {
         if (deviceIOs.length > 0) {
             for (var i = 0; i < deviceIOs.length; i++) {
                 var deviceIO = deviceIOs[i];
-                deviceIO.write(self.keepAliveMessage + "\r\n", function(error) {
+                deviceIO.write(self.keepAliveMessage, function(error) {
                     if (error != null) {
                         self.removeDeviceIO(deviceIO.getAddress());
                     }
@@ -51,7 +51,7 @@ function BluetoothConnection($config, $logger, $event) {
         var requireConnect = false;
         for (var deviceAddress in connectedDeviceLog) {
             if (self.getDeviceIOByAddress(deviceAddress) == null) {
-                $logger.debug("try reconnect to: " + deviceAddress + "-" + connectedDeviceLog[deviceAddress]);
+                $logger.debug("try reconnect to: " + deviceAddress + "-" + connectedDeviceLog[deviceAddress].name);
                 self.connect(deviceAddress, null, function() {
                     callbackFn();
                 }, function() {
@@ -91,17 +91,14 @@ function BluetoothConnection($config, $logger, $event) {
         }
         // ELSE
         var btClient = new(require('bluetooth-serial-port')).BluetoothSerialPort();
-        var deviceName = getDeviceName(deviceAddress, deviceName);
+        var deviceName = self.getCustomDeviceName(deviceAddress, deviceName);
         btClient.findSerialPortChannel(deviceAddress, function(channel) {
             btClient.connect(deviceAddress,
                 channel,
                 function() {
-                    console.log("btClient",btClient);
                     $logger.debug("Connected to: " + deviceAddress + "-" + deviceName);
                     var deviceIO = new DeviceIO(self, deviceName, btClient, $logger, $event);
                     deviceIOs.push(deviceIO);
-                    self.writeConnectedDeviceLog(deviceIO);
-                    $event.fire("centery-device.connect", deviceIO);
                     if (callbackFn != null) {
                         callbackFn(deviceIO);
                     }
@@ -132,18 +129,28 @@ function BluetoothConnection($config, $logger, $event) {
         var deviceIO = self.disconnect(deviceAddress);
         if (deviceIO != null) {
         }
-        removeConnectedDeviceLog(deviceAddress);
-        $event.fire("centery-device.remove", deviceIO);
+        self.removeConnectedDeviceLog(deviceAddress);
+        $event.fire("centery.hub.remove", deviceIO);
         $logger.debug("Disconnect to: " + deviceIO.getAddress() + "-" + deviceIO.getName());
     }
-    this.rename = function(deviceAddress, name) {
+    this.renameHub = function(deviceAddress, name) {
         var deviceIO = self.getDeviceIOByAddress(deviceAddress);
         if (deviceIO != null) {
             var currentName = deviceIO.getName();
             deviceIO.setName(name);
             self.writeConnectedDeviceLog(deviceIO);
-            $event.fire("centery-device.update", deviceIO);
-            $logger.debug("Rename " + deviceAddress + " from '"+ currentName +"' to '" + deviceIO.getName()) + "'";
+            $event.fire("centery.hub.update", deviceIO);
+            $logger.debug("Rename device: " + deviceAddress + " from '"+ currentName +"' to '" + deviceIO.getName() + "'");
+        }
+    }
+    this.renameSwitch = function(deviceAddress, switchAddress, name) {
+        var deviceIO = self.getDeviceIOByAddress(deviceAddress);
+        if (deviceIO != null) {
+            var currentName = deviceIO.getSwitchName(switchAddress);
+            deviceIO.setSwitchName(switchAddress, name);
+            self.writeConnectedDeviceLog(deviceIO);
+            $event.fire("centery.switch.update", deviceIO.getSwitch(switchAddress));
+            $logger.debug("Rename switch " + deviceAddress + ":" + switchAddress + " from '"+ currentName +"' to '" + deviceIO.getSwitchName(switchAddress) + "'");
         }
     }
     this.write = function(deviceAddress, msg) {
@@ -152,11 +159,10 @@ function BluetoothConnection($config, $logger, $event) {
             deviceIO.write(msg);
         }
     }
-    this.setState = function(deviceAddress, state) {
+    this.setState = function(deviceAddress, switchAddress, state) {
         var deviceIO = self.getDeviceIOByAddress(deviceAddress);
         if (deviceIO != null) {
-            deviceIO.write(state);
-            deviceIO.setState(state);
+            deviceIO.setState(switchAddress, state);
         }
     }
     this.findDeviceIOs = function() {
@@ -173,6 +179,45 @@ function BluetoothConnection($config, $logger, $event) {
             }
         }
         return retval;
+    };
+    this.removeDeviceIO = function(address) {
+        for (var i = 0; i < deviceIOs.length; i++) {
+            if (deviceIOs[i].getAddress() == address) {
+                $logger.debug("device's disconnected: ", deviceIOs[i].getAddress() + "-" + deviceIOs[i].getName())
+                $event.fire("centery.hub.disconnect", deviceIOs[i]);
+                deviceIOs.splice(i, 1);
+                break;
+            }
+        }
+    };
+    this.getCustomSwitchName = function(address, switchAddress, defaultName) {
+        var retval = (defaultName == null ? switchAddress : defaultName);
+        var connectedDeviceLog = self.readConnectedDeviceLog();
+        if (connectedDeviceLog[address] != null && connectedDeviceLog[address].switches[switchAddress] != null) {
+            retval = connectedDeviceLog[address].switches[switchAddress].name;
+        }
+        return retval;
+    }
+    this.getCustomDeviceName = function(address, defaultName) {
+        var retval = (defaultName == null ? address : defaultName);
+        var connectedDeviceLog = self.readConnectedDeviceLog();
+        if (connectedDeviceLog[address] != null) {
+            retval = connectedDeviceLog[address].name;
+        }
+        return retval;
+    }
+    this.writeConnectedDeviceLog = function(deviceIO) {
+        var connectedDeviceLog = self.readConnectedDeviceLog();
+        connectedDeviceLog[deviceIO.getAddress()] = {
+            name: deviceIO.getName(),
+            switches: deviceIO.switches,
+        };
+        fs.writeFile($config.get("app.connectedDevicesFilePath"), JSON.stringify(connectedDeviceLog), 'utf8');
+    }
+    this.removeConnectedDeviceLog = function(deviceAddress) {
+        var connectedDeviceLog = self.readConnectedDeviceLog();
+        delete connectedDeviceLog[deviceAddress]
+        fs.writeFile($config.get("app.connectedDevicesFilePath"), JSON.stringify(connectedDeviceLog), 'utf8');
     }
     this.readConnectedDeviceLog = function() {
         var retval = {};
@@ -180,34 +225,6 @@ function BluetoothConnection($config, $logger, $event) {
             var fileData = fs.readFileSync($config.get("app.connectedDevicesFilePath"), "utf8");
             retval = JSON.parse(fileData == null || fileData == "" ? "{}" : fileData);
         } catch (err) {}
-        return retval;
-    }
-    this.writeConnectedDeviceLog = function(deviceIO) {
-        var connectedDeviceLog = self.readConnectedDeviceLog();
-        connectedDeviceLog[deviceIO.getAddress()] = deviceIO.getName();
-        fs.writeFile($config.get("app.connectedDevicesFilePath"), JSON.stringify(connectedDeviceLog), 'utf8');
-    }
-    this.removeDeviceIO = function(address) {
-        for (var i = 0; i < deviceIOs.length; i++) {
-            if (deviceIOs[i].getAddress() == address) {
-                $logger.debug("device's disconnected: ", deviceIOs[i].getAddress() + "-" + deviceIOs[i].getName())
-                $event.fire("centery-device.disconnect", deviceIOs[i]);
-                deviceIOs.splice(i, 1);
-                break;
-            }
-        }
-    }
-    function removeConnectedDeviceLog(deviceAddress) {
-        var connectedDeviceLog = self.readConnectedDeviceLog();
-        delete connectedDeviceLog[deviceAddress]
-        fs.writeFile($config.get("app.connectedDevicesFilePath"), JSON.stringify(connectedDeviceLog), 'utf8');
-    }
-    function getDeviceName(address, defaultName) {
-        var retval = (defaultName == null ? address : defaultName);
-        var connectedDeviceLog = self.readConnectedDeviceLog();
-        if (connectedDeviceLog[address] != null) {
-            retval = connectedDeviceLog[address];
-        }
         return retval;
     }
 }
@@ -218,17 +235,38 @@ function DeviceIO(bluetoothConnection, name, btSerial, $logger, $event) {
     this.btSerial = btSerial;
     this.readers = [];
     this.state = -1;
+    this.switches = {};
+    var isInitialized = false;
+    var receiveDataBuffer = "";
     this.init = function() {
         self.setName(name);
         self.btSerial.on('data', function(buffer) {
             var receiveData = buffer.toString('utf-8');
-            if (receiveData != "\r\n") {
-                self.setState(receiveData);
-                /*
-                for (var i = 0; i < self.readers.length; i++) {
-                    self.readers[i](buffer.toString('utf-8'));
+            if (receiveData != "\r" && receiveData != "\n" && receiveData != "\r\n" && receiveData != "\n\r") {
+                receiveData = receiveData.split('\r').join('');
+                receiveData = receiveData.split('\n').join('');
+                receiveDataBuffer += receiveData;
+                console.log("receiveData", receiveData);
+                if (receiveData.charAt(receiveData.length - 1) == "]") {
+                    console.log("receiveDataBuffer", receiveDataBuffer);
+                    var receiveDataObj = JSON.parse(receiveDataBuffer);
+                    receiveDataBuffer = "";
+                    for (var i = 0; i < receiveDataObj.length; i++) {
+                        self.switches[receiveDataObj[i].id] = {
+                            name: bluetoothConnection.getCustomSwitchName(self.getAddress(), receiveDataObj[i].id, receiveDataObj[i].id),
+                            address: receiveDataObj[i].id,
+                            hubName: self.getName(),
+                            hubAddress: self.getAddress(),
+                            state: receiveDataObj[i].state
+                        }
+                        self.setState(receiveDataObj[i].id, receiveDataObj[i].state);
+                    }
+                    if (!isInitialized) {
+                        isInitialized = true;
+                        bluetoothConnection.writeConnectedDeviceLog(self);
+                        $event.fire("centery.hub.connect", self);
+                    }
                 }
-                */
             }
         });
         self.btSerial.on('closed', function() {
@@ -252,17 +290,29 @@ function DeviceIO(bluetoothConnection, name, btSerial, $logger, $event) {
     this.setName = function(name) {
         self.btSerial.name = name;
     };
-    this.getState = function() {
-        return self.state == null ? -1 : self.state;
+    this.getSwitchName = function(switchAddress) {
+        return self.switches[switchAddress].name;
     };
-    this.setState = function(state) {
-        if (self.state != state) {
-            self.state = state;
-            $event.fire("centery-device.update", self);
+    this.setSwitchName = function(switchAddress, name) {
+        self.switches[switchAddress].name = name;
+    };
+    this.getSwitch = function(switchAddress) {
+        return self.switches[switchAddress];
+    };
+    this.getState = function(switchAddress) {
+        return self.switches[switchAddress] == null ? -1 : self.switches[switchAddress].state;
+    };
+    this.setState = function(switchAddress, state) {
+        var switchObj = self.switches[switchAddress];
+        if (switchObj != null && switchObj.state != state) {
+            self.write("[switch:" + switchAddress + ":" + state + "]");
+            switchObj.state = state;
+            $event.fire("centery.switch.update", switchObj);
         }
     };
     this.write = function(data, callbackFn) {
-        self.btSerial.write(new Buffer(data + "\r\n", "utf-8"), function(err, bytesWritten) {
+        console.log("write", data);
+        self.btSerial.write(new Buffer(data), function(err, bytesWritten) {
             if (err) {
                 $logger.debug("DeviceIO - write failure", err);
                 if (callbackFn != null) {
@@ -281,12 +331,11 @@ function DeviceIO(bluetoothConnection, name, btSerial, $logger, $event) {
         self.btSerial.close();
     };
     this.serialize = function() {
-        return {
-            name: self.getName(),
-            address: self.getAddress(),
-            hubAddress: self.getAddress(),
-            state: self.getState(),
+        var retval = [];
+        for (var switchAddress in self.switches) {
+            retval.push(self.switches[switchAddress]);
         }
+        return retval;
     };
     this.init();
 }

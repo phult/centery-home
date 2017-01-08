@@ -1,27 +1,41 @@
 module.exports = IOService;
 
 function IOService($config, $logger, $event, $socketIOConnection, $hubService) {
-    $event.listen("centery-device.*", function(event, deviceIO) {
-        $logger.debug("on centery device event: " + event, deviceIO);
+    $event.listen("centery.*", function(event, data) {
+        $logger.debug("on centery device event: " + event, data);
         switch (event) {
-            case "centery-device.connect":
+            case "centery.hub.connect":
                 {
-                    $socketIOConnection.broadcastMessage("switch.connect", deviceIO.serialize());
+                    var deviceIOSerializes = data.serialize();
+                    for (var i = 0; i < deviceIOSerializes.length; i++) {
+                        $socketIOConnection.broadcastMessage("switch.connect", deviceIOSerializes[i]);
+                    }
                     break;
                 }
-            case "centery-device.disconnect":
+            case "centery.hub.disconnect":
                 {
-                    $socketIOConnection.broadcastMessage("switch.disconnect", deviceIO.serialize());
+                    var deviceIOSerializes = data.serialize();
+                    for (var i = 0; i < deviceIOSerializes.length; i++) {
+                        $socketIOConnection.broadcastMessage("switch.disconnect", deviceIOSerializes[i]);
+                    }
                     break;
                 }
-            case "centery-device.remove":
+            case "centery.hub.remove":
                 {
-                    $socketIOConnection.broadcastMessage("switch.remove", deviceIO.serialize());
+                    var deviceIOSerializes = data.serialize();
+                    for (var i = 0; i < deviceIOSerializes.length; i++) {
+                        $socketIOConnection.broadcastMessage("switch.remove", deviceIOSerializes[i]);
+                    }
                     break;
                 }
-            case "centery-device.update":
+            case "centery.hub.update":
                 {
-                    $socketIOConnection.broadcastMessage("switch.update", deviceIO.serialize());
+                    $socketIOConnection.broadcastMessage("hub.update", data);
+                    break;
+                }
+            case "centery.switch.update":
+                {
+                    $socketIOConnection.broadcastMessage("switch.update", data);
                     break;
                 }
             default:

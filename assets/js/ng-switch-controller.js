@@ -37,12 +37,6 @@ centeryApp.controller('SwitchController', function ($scope, $rootScope, $http, $
         });
     };
     $scope.remove = function(switchObj) {
-        $http.post("/remove-switch", {
-            'switch': switchObj.address
-        }).success(function (data) {
-
-        }).error(function () {
-        });
     };
     $scope.getSwitchColor = function(switchObj) {
         var retval = "";
@@ -130,9 +124,9 @@ centeryApp.controller('SwitchController', function ($scope, $rootScope, $http, $
         $scope.onRenaming = false;
         $scope.selectedSwitch.name = $scope.selectedSwitch.currentName;
         $http.post("/rename-switch", {
-            'hub': $scope.selectedSwitch.hubAddress,
-            'switch': $scope.selectedSwitch.address,
-            'name': $scope.selectedSwitch.name
+            hubAddress: $scope.selectedSwitch.hubAddress,
+            address: $scope.selectedSwitch.address,
+            name: $scope.selectedSwitch.name
         }).success(function (data) {
 
         }).error(function () {

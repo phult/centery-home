@@ -9,10 +9,17 @@ var util = require(__dir + "/utils/util");
 function HomeController($config, $event, $logger, $hubService) {
     var self = this;
     var localIP = networkUtil.getLocalIP();
-    this.index = function(io) {
+    this.switchMonitor = function(io) {
         var room = util.getSetting("room", "Unknown");
         var title = $config.get("app.name");
-        io.render("home", {
+        io.render("switch", {
+            title: title,
+            room: room,
+            version: packageCfg.version,
+            host: localIP,
+            port: $config.get("app.port", "2307")
+        });
+    };
             title: title,
             room: room,
             version: packageCfg.version,
@@ -43,18 +50,18 @@ function HomeController($config, $event, $logger, $hubService) {
         });
     };
     this.renameHub = function(io) {
-        var hubAddress = io.inputs.hub;
-        var value = io.inputs.name;
-        $hubService.rename(hubAddress, name);
+        var hubAddress = io.inputs.hubAddress;
+        var name = io.inputs.hubName;
+        $hubService.renameHub(hubAddress, name);
         io.json({
             "status": "ok"
         });
     };
     this.renameSwitch = function(io) {
-        var hubAddress = io.inputs.hub;
-        var switchAddress = io.inputs.switch;
+        var hubAddress = io.inputs.hubAddress;
+        var switchAddress = io.inputs.address;
         var name = io.inputs.name;
-        $hubService.rename(hubAddress, name);
+        $hubService.renameSwitch(hubAddress, switchAddress, name);
         io.json({
             "status": "ok"
         });

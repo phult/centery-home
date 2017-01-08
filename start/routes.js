@@ -1,6 +1,6 @@
 module.exports = function ($route, $logger) {
     /** Home Controller **/
-    $route.get("/", "HomeController@index", {
+    $route.get("/", "HomeController@switchMonitor", {
         before: ["auth"]
     });
     $route.get("/device", "HomeController@scan", {
