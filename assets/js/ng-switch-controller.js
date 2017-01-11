@@ -1,6 +1,7 @@
 centeryApp.controller('SwitchController', function ($scope, $rootScope, $http, $window, $timeout, io) {
     var self = this;
     $scope.switches = [];
+    $scope.hubs = [];
     this.__proto__ = new BaseController($scope, $rootScope, $http, io);
     this.initialize = function () {
         this.__proto__.initialize();
@@ -45,6 +46,9 @@ centeryApp.controller('SwitchController', function ($scope, $rootScope, $http, $
             });
         });
     };
+    $scope.$watch("switches", function(newValue, oldValue){
+        $scope.hubs = $scope.listHubs();
+    });
     $scope.remove = function(switchObj) {
     };
     $scope.listHubs = function() {

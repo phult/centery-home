@@ -52,16 +52,8 @@
             <!-- Content Wrapper. Contains page content -->
             <div class="content-wrapper">
                 <!-- Main content -->
-                <section class="content-header">
-                  <h1>
-                    Switch Monitor
-                    <small>CONTROL PANEL</small>
-                  </h1>
-                </section>
-                <section class="content">
-                    <div class="row" ng-controller="SwitchController">
-                        <%- include('components/switch-list') %>
-                    </div>
+                <section class="content" ng-controller="SwitchController">
+                    <%- include('components/switch-list') %>
                 </section>
                 <!-- /.content -->
             </div>
